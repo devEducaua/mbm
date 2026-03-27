@@ -11,7 +11,7 @@ func main() {
 	argv := os.Args;	
 
 	if len(argv) < 2 {
-		fmt.Fprintf(os.Stderr, "mbm: command not passed\n")
+		fmt.Fprintf(os.Stderr, "mbm: pass a valid command\n")
 		os.Exit(1);
 	}
 
