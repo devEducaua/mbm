@@ -10,7 +10,7 @@ func main() {
 	argv := os.Args;	
 
 	if len(argv) < 2 {
-		fmt.Fprintf(os.Stderr, "bk: command not passed\n")
+		fmt.Fprintf(os.Stderr, "mbm: command not passed\n")
 		os.Exit(1);
 	}
 
@@ -21,7 +21,7 @@ func parseCommand(cmd []string) {
 	switch cmd[1] {
 	case "get":
 		if len(cmd) < 3 {
-			fmt.Fprintf(os.Stderr, "bk: `get` command needs the `name` argument\n")
+			fmt.Fprintf(os.Stderr, "mbm: `get` command needs the `name` argument\n")
 			os.Exit(1);
 		}
 
@@ -36,7 +36,7 @@ func parseCommand(cmd []string) {
 		var name, url string;
 
 		if len(cmd) < 3 {
-			fmt.Fprintf(os.Stderr, "bk: `add` command needs the url argument\n");
+			fmt.Fprintf(os.Stderr, "mbm: `add` command needs the url argument\n");
 			os.Exit(1);
 		}
 
@@ -48,7 +48,7 @@ func parseCommand(cmd []string) {
 			name = cmd[3];
 		}
 
-		m, err := parseBkFile();
+		m, err := parseConfigFile();
 		if err != nil {
 			panic(err);
 		}
@@ -62,7 +62,7 @@ func parseCommand(cmd []string) {
 			panic(err);
 		}
 	case "list":
-		m, err := parseBkFile();
+		m, err := parseConfigFile();
 		if err != nil {
 			panic(err);
 		}
@@ -78,7 +78,7 @@ func parseCommand(cmd []string) {
 }
 
 func saveBookmark(name string, url string) error {
-	const path = "./bks";
+	const path = "./mbmc";
 
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644);
 	if err != nil {
@@ -97,7 +97,7 @@ func saveBookmark(name string, url string) error {
 }
 
 func getUrlByName(name string) (string, error) {
-	m, err := parseBkFile();
+	m, err := parseConfigFile();
 	if err != nil {
 		return "", err;
 	}
@@ -105,8 +105,8 @@ func getUrlByName(name string) (string, error) {
 	return m[name], nil;
 }
 
-func parseBkFile() (map[string]string, error) {
-	const path = "./bks";
+func parseConfigFile() (map[string]string, error) {
+	const path = "./mbmc";
 
 	dat, err := os.ReadFile(path);
 	if err != nil {

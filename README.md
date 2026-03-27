@@ -1,6 +1,6 @@
 
-# bk
-simple cli to manage bookmarks.
+# mbm
+**m**anage **b**ook**m**arks in a simple way.
 
 list -l -> list all bookmarks name on stdout
 open -o -> open bookmark with xdg-open
