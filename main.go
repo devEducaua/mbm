@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -72,6 +73,18 @@ func parseCommand(cmd []string) {
 		}
 
 	case "open":
+
+		name := cmd[2];
+
+		m, err := parseConfigFile();
+		if err != nil {
+			panic(err);
+		}
+
+		cmd := exec.Command("xdg-open", m[name]);
+		if err := cmd.Run(); err != nil {
+			panic(err);
+		}
 	default:
 		os.Exit(1);
 	}
@@ -121,7 +134,6 @@ func parseConfigFile() (map[string]string, error) {
 		if strings.TrimSpace(l) == "" {
 			continue;
 		}
-
 		parts := strings.SplitN(l, " ", 2);
 		name := parts[0];
 		url := parts[1];
@@ -130,4 +142,3 @@ func parseConfigFile() (map[string]string, error) {
 
 	return m, nil;
 }
-
