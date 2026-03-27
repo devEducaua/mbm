@@ -15,20 +15,30 @@ func main() {
 		os.Exit(1);
 	}
 
-	parseCommand(argv);
+	err := parseCommand(argv);
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err);
+		os.Exit(1);
+	}
 }
 
-func parseCommand(cmd []string) {
+func parseCommand(cmd []string) error {
 	switch cmd[1] {
 	case "get":
 		if len(cmd) < 3 {
-			fmt.Fprintf(os.Stderr, "mbm: `get` command needs the `name` argument\n")
-			os.Exit(1);
+			return fmt.Errorf("`get` command needs the `name` argument\n")
 		}
 
-		url, err := getUrlByName(cmd[2]);
+		name := cmd[2];
+
+		m, err := parseConfigFile();
 		if err != nil {
-			panic(err);
+			return fmt.Errorf("failed to parse the config file: %v", err);
+		}	
+
+		url := m[name];
+		if url == "" {
+			return fmt.Errorf("bookmark with name: `%v` not found", name);
 		}
 
 		fmt.Println(url);
@@ -37,8 +47,7 @@ func parseCommand(cmd []string) {
 		var name, url string;
 
 		if len(cmd) < 3 {
-			fmt.Fprintf(os.Stderr, "mbm: `add` command needs the url argument\n");
-			os.Exit(1);
+			return fmt.Errorf("`add` command needs the `url` argument\n")
 		}
 
 		url = cmd[2];
@@ -51,21 +60,20 @@ func parseCommand(cmd []string) {
 
 		m, err := parseConfigFile();
 		if err != nil {
-			panic(err);
+			return fmt.Errorf("failed to parse the config file: %v", err);
 		}
 		if m[name] != "" {
-			fmt.Println("bookmark with this name already exists");
-			os.Exit(1);
+			return fmt.Errorf("a bookmark with the name: `%v` already exists", err);
 		}
 
 		err = saveBookmark(name, url);
 		if err != nil {
-			panic(err);
+			return fmt.Errorf("failed to save the bookmark: %v", err);
 		}
 	case "list":
 		m, err := parseConfigFile();
 		if err != nil {
-			panic(err);
+			return fmt.Errorf("failed to parse the config file: %v", err);
 		}
 
 		for b := range m {
@@ -73,21 +81,26 @@ func parseCommand(cmd []string) {
 		}
 
 	case "open":
+		if len(cmd) < 3 {
+			return fmt.Errorf("`open` command needs the `name` argument\n")
+		}
 
 		name := cmd[2];
 
 		m, err := parseConfigFile();
 		if err != nil {
-			panic(err);
+			return fmt.Errorf("failed to parse the config file: %v", err);
 		}
 
 		cmd := exec.Command("xdg-open", m[name]);
 		if err := cmd.Run(); err != nil {
-			panic(err);
+			return fmt.Errorf("failed to run external command: %v", err);
 		}
 	default:
-		os.Exit(1);
+		return fmt.Errorf("command: `%v` not found", cmd[1]);
 	}
+
+	return nil;
 }
 
 func saveBookmark(name string, url string) error {
@@ -107,15 +120,6 @@ func saveBookmark(name string, url string) error {
 	}
 
 	return nil;
-}
-
-func getUrlByName(name string) (string, error) {
-	m, err := parseConfigFile();
-	if err != nil {
-		return "", err;
-	}
-
-	return m[name], nil;
 }
 
 func parseConfigFile() (map[string]string, error) {
