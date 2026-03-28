@@ -1,5 +1,6 @@
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
+TARGET = mbm
 
 all: build
 
