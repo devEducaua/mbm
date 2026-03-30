@@ -95,7 +95,7 @@ func listFlag(mode string, option string) error {
 			}
 		}
 
-		if groupFounded {
+		if !groupFounded {
 			return fmt.Errorf("group not found: %v", option);
 		}
 		return nil;
