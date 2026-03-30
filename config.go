@@ -6,25 +6,16 @@ import (
 	"strings"
 )
 
-const PATH = "./config";
-
-type Group struct {
-	Name string
-	Bookmarks []Bookmark
-}
-
-type Bookmark struct {
-	Name string
-	Url string
-}
-
-func parseConfig() ([]Group, error) {
-	dat, err := os.ReadFile(PATH);
-	if err != nil {
-		return nil, fmt.Errorf("failed to read the file: %v", err);
+func parseConfig(path string) ([]Group, error) {
+	defaultPath := "./config"
+	if path == "default" {
+		path = defaultPath;
 	}
-
-	content := string(dat);
+	
+	content, err := readFile(path);
+	if err != nil {
+		return nil, err;
+	}
 
 	var groups []Group;
 	
@@ -51,8 +42,56 @@ func parseConfig() ([]Group, error) {
 
 		currentGroup.Bookmarks = append(currentGroup.Bookmarks, bk);
 	}
+	groups = append(groups, currentGroup);
 
 	return groups, nil
 }
 
+func saveBookmark(bk Bookmark, groupName string) error {
+	path := "./config";
+
+	var result string;
+
+	content, err := readFile(path);
+	if err != nil {
+		return err;
+	}
+
+	var groups []Group;
+	
+	lines := strings.SplitSeq(content, "\n");
+	var currentGroup = Group{Name: "default"};
+
+	var finalLines []string;
+
+	added := false;
+	for l := range lines {
+		finalLines = append(finalLines, fmt.Sprintf("%v\n", l));
+
+		if strings.HasPrefix(l, "@@ ") {
+			groups = append(groups, currentGroup);
+			currentGroup = Group{
+				Name: l[3:],
+			}
+			continue;
+		}
+
+		if added == false {
+			if currentGroup.Name == groupName {
+				line := fmt.Sprintf("%v = %v\n", bk.Name, bk.Url);
+				finalLines = append(finalLines, line);
+				added = true;
+			}
+		}
+	}	
+
+	result = strings.Join(finalLines, "");
+
+	err = os.WriteFile(path, []byte(result), 0664);
+	if err != nil {
+		return fmt.Errorf("failed to write the file: %v", err);
+	}
+
+	return nil;
+}
 
