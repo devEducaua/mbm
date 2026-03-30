@@ -57,8 +57,6 @@ func saveBookmark(groupName string, bks ...Bookmark) error {
 		return err;
 	}
 
-	var groups []Group;
-	
 	lines := strings.SplitSeq(content, "\n");
 	var currentGroup = Group{Name: "default"};
 
@@ -71,7 +69,6 @@ func saveBookmark(groupName string, bks ...Bookmark) error {
 		finalLines = append(finalLines, l);
 
 		if strings.HasPrefix(l, "@@ ") {
-			groups = append(groups, currentGroup);
 			currentGroup = Group{
 				Name: l[3:],
 			}
