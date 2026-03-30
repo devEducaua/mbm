@@ -47,7 +47,7 @@ func parseConfig(path string) ([]Group, error) {
 	return groups, nil
 }
 
-func saveBookmark(bk Bookmark, groupName string) error {
+func saveBookmark(groupName string, bks ...Bookmark) error {
 	path := "./config";
 
 	var result string;
@@ -65,8 +65,10 @@ func saveBookmark(bk Bookmark, groupName string) error {
 	var finalLines []string;
 
 	added := false;
+	groupFounded := false;
+
 	for l := range lines {
-		finalLines = append(finalLines, fmt.Sprintf("%v\n", l));
+		finalLines = append(finalLines, l);
 
 		if strings.HasPrefix(l, "@@ ") {
 			groups = append(groups, currentGroup);
@@ -78,14 +80,26 @@ func saveBookmark(bk Bookmark, groupName string) error {
 
 		if added == false {
 			if currentGroup.Name == groupName {
-				line := fmt.Sprintf("%v = %v\n", bk.Name, bk.Url);
-				finalLines = append(finalLines, line);
+				for _,bk := range bks {
+					line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
+					finalLines = append(finalLines, line);
+				}
 				added = true;
+				groupFounded = true;
 			}
 		}
 	}	
 
-	result = strings.Join(finalLines, "");
+	if !groupFounded {
+		groupLine := fmt.Sprintf("@@ %v", groupName);
+		finalLines = append(finalLines, groupLine);
+		for _,bk := range bks {
+			line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
+			finalLines = append(finalLines, line);
+		}
+	}
+
+	result = strings.Join(finalLines, "\n");
 
 	err = os.WriteFile(path, []byte(result), 0664);
 	if err != nil {

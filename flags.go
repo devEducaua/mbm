@@ -113,14 +113,10 @@ func listFlag(mode string, option string) error {
 func addFlag(url string, name string, mode string, option string) error {
 	bk := Bookmark{name, url};
 
-	if mode == "file" {
-		panic("TODO: not implemented");
-	}	
-
 	if mode == "default" {
-		saveBookmark(bk, "default");
+		saveBookmark("default", bk);
 	} else {
-		saveBookmark(bk, option);
+		saveBookmark(option, bk);
 	}
 
 	return nil;
