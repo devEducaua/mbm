@@ -2,24 +2,43 @@
 # mbm
 **m**anage **b**ook**m**arks in a simple way.
 
-## commands
+## build
+just run ```make```.
 
-- list -> list all bookmarks name on stdout
-- open "name" -> open bookmark with xdg-open
-- get "name" -> returns an url based on the name
-- add "url" [name] -> save a new bookmark
+to install:
+```sh
+make install
+```
+
+## usage
+
+mbm has two groups of flags:
+- command flags: --add, --list, --get, --open
+- mode flags: --file, --group
+
+each command flag can be combined with a mode flag, meaning that each command has 3 variations.
+
+examples using `--list`:
+
+```sh
+mbm --list # will list all the bookmarks in ~/.config/mbm/config.
+
+mbm --list --group links # will list all the bookmarks in the `links` group.
+
+mbm --list --file ./bks.txt # will list all the bookmarks in the file ./bks.txt.
+```
 
 ## usage in scripts
 
 example usage of mbm with dmenu and fzf
 
 for dmenu:
-```bash
-mbm open $(mbm list | dmenu -i)
+```sh
+mbm open $(mbm --list | dmenu -i)
 ```
 
 for fzf:
-```bash
-mbm open $(mbm list | fzf)
+```sh
+mbm open $(mbm --list | fzf)
 ```
 
