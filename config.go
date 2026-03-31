@@ -9,10 +9,12 @@ import (
 
 func parseConfig(path string) ([]Group, error) {
 
-	defaultPath, err := getConfigDir();
+	configDir, err := getConfigDir();
 	if err != nil {
 		return nil, err;
 	}
+
+	defaultPath := filepath.Join(configDir, "config");
 
 	if path == "default" {
 		path = defaultPath;
@@ -54,10 +56,12 @@ func parseConfig(path string) ([]Group, error) {
 }
 
 func saveBookmark(groupName string, bks ...Bookmark) error {
-	path, err := getConfigDir();
+	configDir, err := getConfigDir();
 	if err != nil {
 		return err;
 	}
+
+	path := filepath.Join(configDir, "config");
 
 	var result string;
 
