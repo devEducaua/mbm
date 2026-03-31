@@ -71,38 +71,32 @@ func saveBookmark(groupName string, bks ...Bookmark) error {
 	}
 
 	lines := strings.SplitSeq(content, "\n");
-	var currentGroup = Group{Name: "default"};
+	var currentGroup = "default";
 
 	var finalLines []string;
 
-	added := false;
-	groupFounded := false;
+	var foundGroup = false;
 
 	for l := range lines {
-		finalLines = append(finalLines, l);
-
+		
 		if strings.HasPrefix(l, "@@ ") {
-			currentGroup = Group{
-				Name: l[3:],
-			}
-			continue;
+			currentGroup = l[3:];
 		}
 
-		if added == false {
-			if currentGroup.Name == groupName {
-				for _,bk := range bks {
-					line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
-					finalLines = append(finalLines, line);
-				}
-				added = true;
-				groupFounded = true;
+		if currentGroup == groupName {
+			for _,bk := range bks {
+				line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
+				finalLines = append(finalLines, line);
 			}
+			foundGroup = true;
 		}
-	}	
 
-	if !groupFounded {
-		groupLine := fmt.Sprintf("@@ %v", groupName);
-		finalLines = append(finalLines, groupLine);
+		finalLines = append(finalLines, l);
+	}
+
+	if !foundGroup {
+		line := fmt.Sprintf("@@ %v", groupName);
+		finalLines = append(finalLines, line);
 		for _,bk := range bks {
 			line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
 			finalLines = append(finalLines, line);
