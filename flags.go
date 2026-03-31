@@ -63,7 +63,7 @@ func parseFlags(argv []string) {
 }
 
 /* 
-	supported flags: --list, --file, --verbose
+	supported flags: --list, --file, --query, --verbose
 */
 func listFlag(query string, verbose bool, filepath string) error {
 	var bks []Bookmark;
