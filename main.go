@@ -5,14 +5,10 @@ import (
 	"os"
 )
 
-type Group struct {
-	Name string
-	Bookmarks []Bookmark
-}
-
 type Bookmark struct {
 	Name string
 	Url string
+	Tags []string
 }
 
 func main() {

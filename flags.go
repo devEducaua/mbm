@@ -4,43 +4,42 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
+// TODO: --query not implemented
 func parseFlags(argv []string) {
-
-	// TODO: considerate turn it on a enum
-	// default, group, file
-	var mode = "default";
-	var option = "";
+	var filepath = "";
 
 	var command string;
-	var name string;
-	var url string;
+	var arg string;
+	var secArg string;
+	var tags []string;
+	var verbose = false;
 
 	for i,arg := range argv {
 		switch arg {
 
 		case "-l", "--list":
 			command = "list";
-		case "-e", "--get":
+		case "-g", "--get":
 			command = "get";
-			name = argv[i+1];	
+			arg = argv[i+1];	
 		case "-o", "--open":
 			command = "open";
-			name = argv[i+1];	
-
+			arg = argv[i+1];	
 		case "-a", "--add":
 			command = "add";
-			url = argv[i+1];
+			arg = argv[i+1];
 		case "-n", "--name":
-			name = argv[i+1];	
-
-		case "-g", "--group":
-			mode = "group";
-			option = argv[i+1];
+			secArg = argv[i+1];	
+		case "-t", "--tags":
+			tags = strings.Split(argv[i+1], ",");
+		case "-q", "--query":
+			secArg = argv[i+1];
+			
 		case "-f", "--file":
-			mode = "file";
-			option = argv[i+1];
+			filepath = argv[i+1];
 		}
 	}
 
@@ -48,16 +47,13 @@ func parseFlags(argv []string) {
 
 	switch command {
 	case "list":
-		err = listFlag(mode, option);
+		err = listFlag(secArg, verbose, filepath);
 	case "get":
-		err = getFlag(name, mode, option);
+		err = getFlag(arg, verbose, filepath);
 	case "open":
-		err = openFlag(name, mode, option);
+		err = openFlag(arg, filepath);
 	case "add":
-		if name == "" {
-			name = url;
-		}
-		addFlag(url, name, mode, option);
+		err = addFlag(arg, secArg, tags, filepath);
 	}
 
 	if err != nil {
@@ -66,73 +62,76 @@ func parseFlags(argv []string) {
 	}
 }
 
-func listFlag(mode string, option string) error {
-	var groups []Group;
+/* 
+	supported flags: --list, --file, --verbose
+*/
+func listFlag(query string, verbose bool, filepath string) error {
+	var bks []Bookmark;
 	var err error;
 
-	if mode == "file" {
-		groups, err = parseConfig(option);
-		if err != nil {
-			return fmt.Errorf("failed to parse the file: %v", err);
+	if filepath != "" {
+		bks, err = parseConfig(filepath);	
+	} else {
+		bks, err = parseConfig("default");	
+	}
+
+	if query != "" {
+		return fmt.Errorf("query is not implemented yet");
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to parse the file: %v", err);
+	}
+
+	for _,bk := range bks {
+		if verbose {
+			fmt.Printf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
+		} else {
+			fmt.Println(bk.Name);
 		}
 	}
 
-	if mode == "default" || mode == "group" {
-		groups, err = parseConfig("default");
+	return nil;
+}
+
+
+/* 
+	supported flags: --add, --file, --tags, --name
+*/
+func addFlag(url string, name string, tags []string, filepath string) error {
+	if filepath != "" {
+		bks, err := parseConfig(filepath);
 		if err != nil {
-			return fmt.Errorf("failed to parse the config: %v", err);
+			return err;
 		}
-	}
-
-	var groupFounded = false;
-	if mode == "group" {
-		for _,group := range groups {
-			if group.Name == option {
-				for _,b := range group.Bookmarks {
-					fmt.Println(b.Name);
-					groupFounded = true;
-				}
-			}
-		}
-
-		if !groupFounded {
-			return fmt.Errorf("group not found: %v", option);
-		}
+		saveBookmark(bks...);
 		return nil;
 	}
 
-	for _,group := range groups {
-		for _,b := range group.Bookmarks {
-			fmt.Println(b.Name);
-		}
+	if name == "" {
+		name = url;
 	}
-	
-	return nil;
-}
 
-func addFlag(url string, name string, mode string, option string) error {
-	bk := Bookmark{name, url};
-
-	if mode == "default" {
-		saveBookmark("default", bk);
-	} else {
-		saveBookmark(option, bk);
-	}
+	bk := Bookmark{name, url, tags};
+	saveBookmark(bk);
 
 	return nil;
 }
 
-func openFlag(arg string, mode string, option string) error {
-	result, err := openGetFlag(arg, mode, option);
+/* 
+	supported flags: --open, --file
+*/
+func openFlag(name string, filepath string) error {
+	bk, err := openGetFlag(name, filepath);
 	if err != nil {
 		return err;
 	}
 
-	if result == "" {
+	if bk.Url == "" {
 		return nil;
 	}
 
-	cmd := exec.Command("xdg-open", result);
+	cmd := exec.Command("xdg-open", bk.Url);
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to run external command: %v", err);
 	}
@@ -140,40 +139,42 @@ func openFlag(arg string, mode string, option string) error {
 	return nil;
 }
 
-func getFlag(arg string, mode string, option string) error {
-
-	result, err := openGetFlag(arg, mode, option);
+/* 
+	supported flags: --get, --verbose, --file
+*/
+func getFlag(name string, verbose bool, filepath string) error {
+	bk, err := openGetFlag(name, filepath);
 	if err != nil {
 		return err;
 	}
 
-	fmt.Println(result);
+	if verbose {
+		fmt.Printf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
+	} else {
+		fmt.Println(bk.Name);
+	}
 
 	return nil;
 }
 
-func openGetFlag(arg string, mode string, option string) (string, error) {
-	var groups []Group;
+func openGetFlag(name string, filepath string) (Bookmark, error) {
+	var bks []Bookmark;
 	var err error;
-	if mode == "file" {
-		groups, err = parseConfig(option);
+
+	if filepath != "" {
+		bks, err = parseConfig(filepath);
 	} else {
-		groups, err = parseConfig("default");
+		bks, err = parseConfig("default");
 	}
 
 	if err != nil {
-		return "", fmt.Errorf("failed to parse the config: %v", err);
+		return Bookmark{}, fmt.Errorf("failed to parse the config: %v", err);
 	}
 	
-	var result string;
-
-	for _,group := range groups {
-		for _,bk := range group.Bookmarks {
-			if bk.Name == arg {
-				result = bk.Url;
-			}
+	for _,bk := range bks {
+		if bk.Name == name {
+			return bk, nil;
 		}
 	}
-
-	return result, nil;
+	return Bookmark{}, nil;
 }
