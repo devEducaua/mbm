@@ -1,13 +1,19 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 func parseConfig(path string) ([]Group, error) {
-	defaultPath := "./config"
+
+	defaultPath, err := getConfigDir();
+	if err != nil {
+		return nil, err;
+	}
+
 	if path == "default" {
 		path = defaultPath;
 	}
@@ -48,7 +54,10 @@ func parseConfig(path string) ([]Group, error) {
 }
 
 func saveBookmark(groupName string, bks ...Bookmark) error {
-	path := "./config";
+	path, err := getConfigDir();
+	if err != nil {
+		return err;
+	}
 
 	var result string;
 
@@ -104,5 +113,21 @@ func saveBookmark(groupName string, bks ...Bookmark) error {
 	}
 
 	return nil;
+}
+
+func getConfigDir() (string, error) {
+	home, err := os.UserHomeDir();
+	if err != nil {
+		return "", err;
+	}
+
+	path := filepath.Join(home, ".config", "mbm");
+
+	err = os.MkdirAll(path, 0755);
+	if err != nil {
+		return "", err;
+	}
+
+	return path, nil;	
 }
 
