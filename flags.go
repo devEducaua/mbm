@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -47,7 +48,7 @@ func parseFlags(argv []string) {
 
 	switch command {
 	case "list":
-		err = listFlag(secArg, verbose, filepath);
+		err = listFlag(tags, verbose, filepath);
 	case "get":
 		err = getFlag(arg, verbose, filepath);
 	case "open":
@@ -63,27 +64,32 @@ func parseFlags(argv []string) {
 }
 
 /* 
-	supported flags: --list, --file, --query, --verbose
+	supported flags: --list, --file, --tags, --verbose
 */
-func listFlag(query string, verbose bool, filepath string) error {
-	var bks []Bookmark;
-	var err error;
-
-	if filepath != "" {
-		bks, err = parseConfig(filepath);	
-	} else {
-		bks, err = parseConfig("default");	
+func listFlag(tags []string, verbose bool, filepath string) error {
+	if filepath == "" {
+		filepath = "default"
 	}
 
-	if query != "" {
-		return fmt.Errorf("query is not implemented yet");
-	}
-
+	bks, err := parseConfig(filepath);	
 	if err != nil {
 		return fmt.Errorf("failed to parse the file: %v", err);
 	}
 
-	for _,bk := range bks {
+	var filtered []Bookmark;
+
+	if len(tags) != 0 {
+		tag := tags[0];
+		for _,bk := range bks {
+			if slices.Contains(bk.Tags, tag) {
+				filtered = append(filtered, bk);
+			}
+		}
+	} else {
+		filtered = bks;
+	}
+
+	for _,bk := range filtered {
 		if verbose {
 			fmt.Printf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
 		} else {
@@ -93,7 +99,6 @@ func listFlag(query string, verbose bool, filepath string) error {
 
 	return nil;
 }
-
 
 /* 
 	supported flags: --add, --file, --tags, --name
