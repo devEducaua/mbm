@@ -27,18 +27,18 @@ func parseConfig(path string) ([]Bookmark, error) {
 
 	var bks []Bookmark;
 
-	lines := strings.SplitSeq(content, "\n");
-	for l := range lines {
-
+	lines := strings.Split(content, "\n");
+	for i,l := range lines {
 		if strings.TrimSpace(l) == "" {
 			continue;
 		}
 
 		parts := strings.SplitN(l, " ", 3);
-		var tags []string;
+		var tags = []string{};
 
 		if len(parts) < 2 {
-			return nil, fmt.Errorf("failed to parse the bookmark line");
+			fmt.Printf("failed to parse the bookmark line: %v\n", i);
+			continue;
 		}
 
 		name := strings.TrimSpace(parts[0]);
