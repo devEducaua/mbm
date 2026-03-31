@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseConfig(path string) ([]Group, error) {
+func parseConfig(path string) ([]Bookmark, error) {
 
 	configDir, err := getConfigDir();
 	if err != nil {
@@ -25,37 +25,38 @@ func parseConfig(path string) ([]Group, error) {
 		return nil, err;
 	}
 
-	var groups []Group;
-	
+	var bks []Bookmark;
+
 	lines := strings.SplitSeq(content, "\n");
-	var currentGroup = Group{Name: "default"};
 	for l := range lines {
 
 		if strings.TrimSpace(l) == "" {
 			continue;
 		}
 
-		if strings.HasPrefix(l, "@@ ") {
-			groups = append(groups, currentGroup);
-			currentGroup = Group{
-				Name: l[3:],
-			}
-			continue;
+		parts := strings.SplitN(l, " ", 3);
+		var tags []string;
+
+		if len(parts) < 2 {
+			return nil, fmt.Errorf("failed to parse the bookmark line");
 		}
 
-		parts := strings.SplitN(l, "=", 2);
 		name := strings.TrimSpace(parts[0]);
 		url := strings.TrimSpace(parts[1]);
-		bk := Bookmark{name, url};
 
-		currentGroup.Bookmarks = append(currentGroup.Bookmarks, bk);
+		if len(parts) == 3 {
+			tagsStr := strings.TrimSpace(parts[2]);
+			tags = strings.Split(tagsStr, ",");
+		}
+
+		bk := Bookmark{name, url, tags};
+		bks = append(bks, bk);
 	}
-	groups = append(groups, currentGroup);
 
-	return groups, nil
+	return bks, nil
 }
 
-func saveBookmark(groupName string, bks ...Bookmark) error {
+func saveBookmark(bks ...Bookmark) error {
 	configDir, err := getConfigDir();
 	if err != nil {
 		return err;
@@ -63,51 +64,19 @@ func saveBookmark(groupName string, bks ...Bookmark) error {
 
 	path := filepath.Join(configDir, "config");
 
-	var result string;
-
-	content, err := readFile(path);
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644);
 	if err != nil {
 		return err;
 	}
+	defer f.Close();
 
-	lines := strings.SplitSeq(content, "\n");
-	var currentGroup = "default";
+	for _,bk := range bks {
+		line := fmt.Sprintf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
 
-	var finalLines []string;
-
-	var foundGroup = false;
-
-	for l := range lines {
-		
-		if strings.HasPrefix(l, "@@ ") {
-			currentGroup = l[3:];
+		_, err = f.WriteString(line);
+		if err != nil {
+			return err;
 		}
-
-		if currentGroup == groupName {
-			for _,bk := range bks {
-				line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
-				finalLines = append(finalLines, line);
-			}
-			foundGroup = true;
-		}
-
-		finalLines = append(finalLines, l);
-	}
-
-	if !foundGroup {
-		line := fmt.Sprintf("@@ %v", groupName);
-		finalLines = append(finalLines, line);
-		for _,bk := range bks {
-			line := fmt.Sprintf("%v = %v", bk.Name, bk.Url);
-			finalLines = append(finalLines, line);
-		}
-	}
-
-	result = strings.Join(finalLines, "\n");
-
-	err = os.WriteFile(path, []byte(result), 0664);
-	if err != nil {
-		return fmt.Errorf("failed to write the file: %v", err);
 	}
 
 	return nil;
