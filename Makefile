@@ -12,3 +12,6 @@ install:
 
 uninstall:
 	rm $(BINDIR)/$(TARGET)
+
+clean: 
+	rm $(TARGET)
