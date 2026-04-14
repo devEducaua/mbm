@@ -18,8 +18,8 @@ func parseFlags(argv []string) {
 	var tags []string;
 	var verbose = false;
 
-	for i,arg := range argv {
-		switch arg {
+	for i,v := range argv {
+		switch v {
 
 		case "-l", "--list":
 			command = "list";
