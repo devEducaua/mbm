@@ -38,6 +38,8 @@ func parseFlags(argv []string) {
 			tags = strings.Split(argv[i+1], ",");
 		case "-q", "--query":
 			secArg = argv[i+1];
+		case "-v", "--verbose":
+			verbose = true;
 			
 		case "-f", "--file":
 			filepath = argv[i+1];
