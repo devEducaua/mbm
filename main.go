@@ -14,7 +14,12 @@ type Bookmark struct {
 func main() {
 	argv := os.Args;	
 
-	parseFlags(argv);
+	err := parseFlags(argv);
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err);
+		os.Exit(1);
+	}
 }
 
 func readFile(path string) (string, error) {
