@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseFlags(argv []string) {
+func parseFlags(argv []string) error {
 	var filepath = "";
 
 	var command string;
@@ -16,6 +16,8 @@ func parseFlags(argv []string) {
 	var tags []string;
 	var verbose = false;
 
+	var parsingError error = nil;
+
 	for i,v := range argv {
 		switch v {
 
@@ -23,24 +25,55 @@ func parseFlags(argv []string) {
 			command = "list";
 		case "-g", "--get":
 			command = "get";
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--get` needs one argument.");
+				break;
+			}
 			arg = argv[i+1];	
 		case "-o", "--open":
 			command = "open";
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--open` needs one argument.");
+				break;
+			}
 			arg = argv[i+1];	
 		case "-a", "--add":
 			command = "add";
-			arg = argv[i+1];
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--add` needs one argument, if option --file is not provided.");
+				break;
+			}
+
+			if argv[i+1] != "--file" {
+				arg = argv[i+1];
+			}
 		case "-n", "--name":
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--name` needs one argument.");
+				break;
+			}
 			secArg = argv[i+1];	
 		case "-t", "--tags":
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--tags` needs one argument.");
+				break;
+			}
 			tags = strings.Split(argv[i+1], ",");
+
 		case "-v", "--verbose":
 			verbose = true;
 		case "--help":
 			command = "help";	
 		case "-f", "--file":
+			if len(argv) <= i+1 {
+				parsingError = fmt.Errorf("invalid operation: `--file` needs one argument.");
+				break;
+			}
 			filepath = argv[i+1];
 		}
+	}
+	if parsingError != nil {
+		return parsingError;	
 	}
 
 	var err error;
@@ -63,9 +96,9 @@ func parseFlags(argv []string) {
 	}
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err);
-		os.Exit(1);
+		return err;
 	}
+	return nil;
 }
 
 /* 
