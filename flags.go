@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"slices"
 	"strings"
 )
 
-// TODO: --query not implemented
 func parseFlags(argv []string) {
 	var filepath = "";
 
@@ -36,8 +34,6 @@ func parseFlags(argv []string) {
 			secArg = argv[i+1];	
 		case "-t", "--tags":
 			tags = strings.Split(argv[i+1], ",");
-		case "-q", "--query":
-			secArg = argv[i+1];
 		case "-v", "--verbose":
 			verbose = true;
 			
@@ -78,20 +74,31 @@ func listFlag(tags []string, verbose bool, filepath string) error {
 		return fmt.Errorf("failed to parse the file: %v", err);
 	}
 
-	var filtered []Bookmark;
+	var result []Bookmark;
 
-	if len(tags) != 0 {
-		tag := tags[0];
-		for _,bk := range bks {
-			if slices.Contains(bk.Tags, tag) {
-				filtered = append(filtered, bk);
+	for _,bk := range bks {
+		tagBk := make(map[string]bool);
+		for _,t := range bk.Tags {
+			tagBk[t] = true;
+		}
+
+		match := true;
+		for _,t := range tags {
+			if !tagBk[t] {
+				match = false;
 			}
 		}
-	} else {
-		filtered = bks;
+
+		if match {
+			result = append(result, bk);
+		}
 	}
 
-	for _,bk := range filtered {
+	if len(tags) == 0 {
+		result = bks;
+	}
+
+	for _,bk := range result {
 		if verbose {
 			fmt.Printf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
 		} else {

@@ -1,6 +1,6 @@
 
 # TODO
 
-- better tag system on --list
+- handle files on the .config/mbm directory
 - better documentation
 
