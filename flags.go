@@ -36,7 +36,8 @@ func parseFlags(argv []string) {
 			tags = strings.Split(argv[i+1], ",");
 		case "-v", "--verbose":
 			verbose = true;
-			
+		case "--help":
+			command = "help";	
 		case "-f", "--file":
 			filepath = argv[i+1];
 		}
@@ -45,6 +46,12 @@ func parseFlags(argv []string) {
 	var err error;
 
 	switch command {
+	case "help":
+		cmd := exec.Command("man", "mbm", "1");
+		cmd.Stdin = os.Stdin;
+		cmd.Stdout = os.Stdout;
+		cmd.Stderr = os.Stderr;
+		cmd.Run();
 	case "list":
 		err = listFlag(tags, verbose, filepath);
 	case "get":

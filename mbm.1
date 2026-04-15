@@ -1,0 +1,112 @@
+.TH MBM 1 "April 2026" "mbm 1.0" "User Commands"
+
+.SH NAME
+mbm \- manage bookmarks from the command line
+
+.SH SYNOPSIS
+.B mbm
+.RI [ MODE ] [ OPTIONS ]
+
+.SH DESCRIPTION
+mbm is a simple command-line bookmark manager.
+
+.SH MODES
+
+.TP
+.B --list
+list all bookmarks.
+.br
+.B mbm --list [--tags TAGS] [--file PATH] [--verbose]
+.RS
+.TP
+.B --tags TAGS
+filter bookmarks by a comma-separated list of tags.
+
+.TP
+.B --file PATH
+use an alternate bookmark file.
+
+.TP
+.B --verbose
+enable verbose output.
+.RE
+
+.TP
+.B --add URL
+add a bookmark.
+.br
+.B mbm --add URL [--name NAME] [--tags TAGS] [--file PATH]
+.RS
+.TP
+.B --name NAME
+name of the bookmark.
+
+.TP
+.B --tags TAGS
+comma-separated list of tags to assign.
+
+.TP
+.B --file PATH
+add bookmarks from file instead of URL argument.
+.RE
+
+.TP
+.B --get NAME
+print the URL of a bookmark.
+.br
+.B mbm --get NAME [--file PATH] [--verbose]
+.RS
+.TP
+.B --file PATH
+use an alternative bookmark file.
+
+.TP
+.B --verbose
+enable verbose output.
+.RE
+
+.TP
+.B --open NAME
+open a bookmark using xdg-open.
+.br
+.B mbm --open NAME [--file PATH]
+.RS
+.TP
+.B --file PATH
+use an alternative bookmark file.
+.RE
+
+.TP
+.B --help
+display this manual.
+
+.SH NOTES
+only one mode flag may be specified at a time.
+.br
+options are interpreted in the context of the selected mode.
+
+.SH EXAMPLES
+
+.TP
+list bookmarks with tags:
+.B mbm --list --tags personal,work
+
+.TP
+add a bookmark:
+.B mbm --add https://example.com --name example --tags personal
+
+.TP
+get a bookmark:
+.B mbm --get example
+
+.TP
+open a bookmark:
+.B mbm --open example
+
+.SH EXIT STATUS
+0 on success, non-zero on error.
+
+.SH FILES
+.TP
+.I ~/.config/mbm/config
+default bookmark file.
