@@ -12,14 +12,10 @@ make install
 
 ## usage
 
-```sh
-mbm --list # will list all the bookmarks in ~/.config/mbm/config.
-
-mbm --list --file ./bks.txt # will list all the bookmarks in the file ./bks.txt.
-
-mbm --add https://example.com --name example --tags test,example # will save a new bookmark.
-
-mbm --open example # will open the bookmark with `xdg-open`.j
+usage information are all in the manpage.
+to open, type:
+```sh 
+mbm --help
 ```
 
 ## usage in scripts
