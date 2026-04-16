@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
 func parseFlags(argv []string) error {
-	var filepath = "";
+	var fp = "";
 
 	var command string;
 	var arg string;
@@ -47,6 +48,10 @@ func parseFlags(argv []string) error {
 			if argv[i+1] != "--file" {
 				arg = argv[i+1];
 			}
+		case "--help":
+			command = "help";	
+		case "--edit":
+			command = "edit";
 		case "-n", "--name":
 			if len(argv) <= i+1 {
 				parsingError = fmt.Errorf("invalid operation: `--name` needs one argument.");
@@ -62,14 +67,13 @@ func parseFlags(argv []string) error {
 
 		case "-v", "--verbose":
 			verbose = true;
-		case "--help":
-			command = "help";	
+
 		case "-f", "--file":
 			if len(argv) <= i+1 {
 				parsingError = fmt.Errorf("invalid operation: `--file` needs one argument.");
 				break;
 			}
-			filepath = argv[i+1];
+			fp = argv[i+1];
 		}
 	}
 	if parsingError != nil {
@@ -80,19 +84,30 @@ func parseFlags(argv []string) error {
 
 	switch command {
 	case "help":
-		cmd := exec.Command("man", "mbm", "1");
-		cmd.Stdin = os.Stdin;
-		cmd.Stdout = os.Stdout;
-		cmd.Stderr = os.Stderr;
-		cmd.Run();
+		err = externalCommand("man", "mbm", "1");
+		if err != nil {
+			return err;
+		}
+	case "edit":
+		dir, err := getConfigDir();
+		if err != nil {
+			return err;
+		}
+
+		editor := os.Getenv("EDITOR");
+		err = externalCommand(editor, filepath.Join(dir, "config"));
+		if err != nil {
+			return err;
+		}
+
 	case "list":
-		err = listFlag(tags, verbose, filepath);
+		err = listFlag(tags, verbose, fp);
 	case "get":
-		err = getFlag(arg, verbose, filepath);
+		err = getFlag(arg, verbose, fp);
 	case "open":
-		err = openFlag(arg, filepath);
+		err = openFlag(arg, fp);
 	case "add":
-		err = addFlag(arg, secArg, tags, filepath);
+		err = addFlag(arg, secArg, tags, fp);
 	}
 
 	if err != nil {
@@ -104,12 +119,12 @@ func parseFlags(argv []string) error {
 /* 
 	supported flags: --list, --file, --tags, --verbose
 */
-func listFlag(tags []string, verbose bool, filepath string) error {
-	if filepath == "" {
-		filepath = "default"
+func listFlag(tags []string, verbose bool, fp string) error {
+	if fp == "" {
+		fp = "default"
 	}
 
-	bks, err := parseConfig(filepath);	
+	bks, err := parseConfig(fp);	
 	if err != nil {
 		return fmt.Errorf("failed to parse the file: %v", err);
 	}
@@ -152,9 +167,9 @@ func listFlag(tags []string, verbose bool, filepath string) error {
 /* 
 	supported flags: --add, --file, --tags, --name
 */
-func addFlag(url string, name string, tags []string, filepath string) error {
-	if filepath != "" {
-		bks, err := parseConfig(filepath);
+func addFlag(url string, name string, tags []string, fp string) error {
+	if fp != "" {
+		bks, err := parseConfig(fp);
 		if err != nil {
 			return err;
 		}
@@ -175,8 +190,8 @@ func addFlag(url string, name string, tags []string, filepath string) error {
 /* 
 	supported flags: --open, --file
 */
-func openFlag(name string, filepath string) error {
-	bk, err := openGetFlag(name, filepath);
+func openFlag(name string, fp string) error {
+	bk, err := openGetFlag(name, fp);
 	if err != nil {
 		return err;
 	}
@@ -196,8 +211,8 @@ func openFlag(name string, filepath string) error {
 /* 
 	supported flags: --get, --verbose, --file
 */
-func getFlag(name string, verbose bool, filepath string) error {
-	bk, err := openGetFlag(name, filepath);
+func getFlag(name string, verbose bool, fp string) error {
+	bk, err := openGetFlag(name, fp);
 	if err != nil {
 		return err;
 	}
@@ -211,12 +226,12 @@ func getFlag(name string, verbose bool, filepath string) error {
 	return nil;
 }
 
-func openGetFlag(name string, filepath string) (Bookmark, error) {
+func openGetFlag(name string, fp string) (Bookmark, error) {
 	var bks []Bookmark;
 	var err error;
 
-	if filepath != "" {
-		bks, err = parseConfig(filepath);
+	if fp != "" {
+		bks, err = parseConfig(fp);
 	} else {
 		bks, err = parseConfig("default");
 	}
@@ -231,4 +246,16 @@ func openGetFlag(name string, filepath string) (Bookmark, error) {
 		}
 	}
 	return Bookmark{}, nil;
+}
+
+func externalCommand(cmds ...string) error {
+	cmd := exec.Command(cmds[0], cmds[1:]...);
+	cmd.Stdin = os.Stdin;
+	cmd.Stdout = os.Stdout;
+	cmd.Stderr = os.Stderr;
+	err := cmd.Run();
+	if err != nil {
+		return err;
+	}
+	return nil;
 }
