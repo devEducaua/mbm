@@ -16,7 +16,7 @@ mbm is a simple command-line bookmark manager.
 .B --list
 list all bookmarks.
 .br
-.B mbm --list [--tags TAGS] [--file PATH] [--verbose]
+.B mbm --list [--tags TAGS] [--file PATH] [--query QUERY] [--verbose]
 .RS
 .TP
 .B --tags TAGS
@@ -25,6 +25,10 @@ filter bookmarks by a comma-separated list of tags.
 .TP
 .B --file PATH
 use an alternate bookmark file.
+
+.TP
+.B --query QUERY
+a query structured in reverse polish notion, wiki keywords: "and", "or" and "not".
 
 .TP
 .B --verbose
@@ -94,6 +98,10 @@ options are interpreted in the context of the selected mode.
 .TP
 list bookmarks with tags:
 .B mbm --list --tags personal,work
+
+.TP
+list bookmarks that have the tag programming but not the tag blog.
+.B mbm --list --query "programming blog not and"
 
 .TP
 add a bookmark:
