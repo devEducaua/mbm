@@ -18,7 +18,7 @@ const (
 
 type Tok struct {
     Kind TokKind
-    Value string
+	Value string
 }
 
 func tokenizeQuery(query string) []Tok {
@@ -218,7 +218,7 @@ func getFlag(name string, verbose bool, fp string) error {
     if verbose {
         fmt.Printf("%v %v %v\n", bk.Name, bk.Url, strings.Join(bk.Tags, ","));
     } else {
-        fmt.Println(bk.Name);
+        fmt.Println(bk.Url);
     }
 
     return nil;
