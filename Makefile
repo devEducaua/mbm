@@ -3,15 +3,18 @@ BINDIR = $(PREFIX)/bin
 MANDIR = $(PREFIX)/share/man/man1
 
 TARGET = mbm
+TARGETDIR = bin
 MANPAGE = mbm.1
+SRCS = $(wildcard *.go)
 
-all: build
+all: $(TARGET)
 
-build:
-	go build .
+$(TARGET): $(SRCS)
+	mkdir -p $(TARGETDIR)
+	go build -o $(TARGETDIR)/$(TARGET) .
 
 install:
-	cp $(TARGET) $(BINDIR)/
+	cp $(TARGETDIR)/$(TARGET) $(BINDIR)/
 	cp ./$(MANPAGE) $(MANDIR)/
 	gzip -f $(MANDIR)/$(MANPAGE)
 
@@ -20,4 +23,5 @@ uninstall:
 	rm -f $(MANDIR)/$(MANPAGE).gz
 
 clean: 
-	rm $(TARGET)
+	rm -r $(TARGETDIR)
+
