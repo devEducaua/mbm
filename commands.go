@@ -105,7 +105,7 @@ func listFlag(tags []string, verbose bool, query string, fp string) error {
         fp = "default"
     }
 
-    bks, err := parseConfig(fp);    
+    bks, err := parseFile(fp);    
     if err != nil {
         return fmt.Errorf("failed to parse the file: %v", err);
     }
@@ -166,21 +166,23 @@ func listFlag(tags []string, verbose bool, query string, fp string) error {
     supported flags: --add, --file, --tags, --name
 */
 func addFlag(url string, name string, tags []string, fp string) error {
-    if fp != "" {
-        bks, err := parseConfig(fp);
-        if err != nil {
-            return err;
-        }
-        saveBookmark(bks...);
-        return nil;
-    }
-
     if name == "" {
         name = url;
     }
 
     bk := Bookmark{name, url, tags};
-    saveBookmark(bk);
+
+	if fp != "" {
+		err := saveBookmark(fp, bk);
+		if err != nil {
+			return err;
+		}
+		return nil;
+	}
+	err := saveBookmark("default", bk);
+	if err != nil {
+		return err;
+	}
 
     return nil;
 }
@@ -229,9 +231,9 @@ func openGetFlag(name string, fp string) (Bookmark, error) {
     var err error;
 
     if fp != "" {
-        bks, err = parseConfig(fp);
+        bks, err = parseFile(fp);
     } else {
-        bks, err = parseConfig("default");
+        bks, err = parseFile("default");
     }
 
     if err != nil {
@@ -277,6 +279,29 @@ func editFlag() error {
 	if err != nil {
 		return err;
 	}
+	return nil;
+}
+
+func importFlag(fp string) error {
+	if fp == "" {
+		return fmt.Errorf("--import flag needs a file");
+	}
+
+	bks, err := parseFile(fp);
+	if err != nil {
+		return err;
+	}
+	err = saveBookmark("default", bks...);
+	if err != nil {
+		return err;
+	}
+
+	return nil;
+}
+
+func copyFlag(arg string, fp string) error {
+	_ = arg;
+	_ = fp;
 	return nil;
 }
 

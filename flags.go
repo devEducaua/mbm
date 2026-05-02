@@ -49,6 +49,10 @@ func parseFlags(argv []string) error {
             command = "help";    
         case "--edit":
             command = "edit";
+		case "--copy":
+			command = "copy";
+		case "--import":
+			command = "import";
         case "-n", "--name":
             if len(argv) <= i+1 {
                 parsingError = fmt.Errorf("invalid operation: `--name` needs one argument.");
@@ -99,6 +103,10 @@ func parseFlags(argv []string) error {
         err = openFlag(arg, fp);
     case "add":
         err = addFlag(arg, secArg, tags, fp);
+	case "copy":
+		err = copyFlag(arg, fp);
+	case "import":
+		err = importFlag(fp);
     }
 
     if err != nil {
