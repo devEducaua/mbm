@@ -51,7 +51,7 @@ comma-separated list of tags to assign.
 
 .TP
 .B --file PATH
-add bookmarks from file instead of URL argument.
+add to an alternative bookmark file.
 .RE
 
 .TP
@@ -81,6 +81,34 @@ use an alternative bookmark file.
 .RE
 
 .TP
+.B --import
+import bookmarks from a file to default config file.
+.br
+.B mbm --import --file PATH
+.RS
+.TP
+.B --file PATH
+path to the bookmarks file.
+.RE
+
+.TP
+.B --copy NAME
+copy the bookmark url to the clipboard.
+.br
+.B mbm --copy NAME [--file PATH] [--verbose]
+.RS
+.TP
+.B --file PATH
+use an alternative bookmark file.
+.RE
+
+.RS
+.TP
+.B --verbose PATH
+enable verbose output.
+.RE
+
+.TP
 .B --edit
 opens config file in $EDITOR.
 
@@ -92,6 +120,9 @@ display this manual.
 only one mode flag may be specified at a time.
 .br
 options are interpreted in the context of the selected mode.
+.br
+.B --copy
+flag only works on X11 and depends on xclip.
 
 .SH EXAMPLES
 
