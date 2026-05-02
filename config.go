@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseConfig(path string) ([]Bookmark, error) {
+func parseFile(path string) ([]Bookmark, error) {
 
 	configDir, err := getConfigDir();
 	if err != nil {
@@ -56,13 +56,17 @@ func parseConfig(path string) ([]Bookmark, error) {
 	return bks, nil
 }
 
-func saveBookmark(bks ...Bookmark) error {
+func saveBookmark(path string, bks ...Bookmark) error {
 	configDir, err := getConfigDir();
 	if err != nil {
 		return err;
 	}
 
-	path := filepath.Join(configDir, "config");
+	defaultPath := filepath.Join(configDir, "config");
+
+	if path == "default" {
+		path = defaultPath;
+	}
 
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644);
 	if err != nil {
