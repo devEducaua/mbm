@@ -191,7 +191,7 @@ func addFlag(url string, name string, tags []string, fp string) error {
     supported flags: --open, --file
 */
 func openFlag(name string, fp string) error {
-    bk, err := openGetFlag(name, fp);
+    bk, err := getBookmarkByName(name, fp);
     if err != nil {
         return err;
     }
@@ -212,7 +212,7 @@ func openFlag(name string, fp string) error {
     supported flags: --get, --verbose, --file
 */
 func getFlag(name string, verbose bool, fp string) error {
-    bk, err := openGetFlag(name, fp);
+    bk, err := getBookmarkByName(name, fp);
     if err != nil {
         return err;
     }
@@ -226,7 +226,7 @@ func getFlag(name string, verbose bool, fp string) error {
     return nil;
 }
 
-func openGetFlag(name string, fp string) (Bookmark, error) {
+func getBookmarkByName(name string, fp string) (Bookmark, error) {
     var bks []Bookmark;
     var err error;
 
@@ -282,6 +282,9 @@ func editFlag() error {
 	return nil;
 }
 
+/* 
+    supported flags: --import, --file
+*/
 func importFlag(fp string) error {
 	if fp == "" {
 		return fmt.Errorf("--import flag needs a file");
@@ -298,10 +301,26 @@ func importFlag(fp string) error {
 
 	return nil;
 }
+/* 
+    supported flags: --copy, --verbose, --file
+*/
+func copyFlag(name string, verbose bool, fp string) error {
+	bk, err := getBookmarkByName(name, fp);
+	if err != nil {
+		return err;
+	}
 
-func copyFlag(arg string, fp string) error {
-	_ = arg;
-	_ = fp;
+	cmd := exec.Command("xclip", "-selection", "clipboard", "-i");
+	cmd.Stdin = strings.NewReader(bk.Url);
+
+	if err := cmd.Run(); err != nil {
+		return err;
+	}
+
+	if verbose {
+		fmt.Println(bk.Url);
+	}
+
 	return nil;
 }
 

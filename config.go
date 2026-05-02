@@ -19,7 +19,7 @@ func parseFile(path string) ([]Bookmark, error) {
 	if path == "default" {
 		path = defaultPath;
 	}
-	
+
 	content, err := readFile(path);
 	if err != nil {
 		return nil, err;
