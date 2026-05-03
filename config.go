@@ -87,14 +87,11 @@ func saveBookmark(path string, bks ...Bookmark) error {
 }
 
 func getConfigDir() (string, error) {
-	home, err := os.UserHomeDir();
-	if err != nil {
-		return "", err;
-	}
+	xdgDir := os.Getenv("XDG_CONFIG_HOME");
 
-	path := filepath.Join(home, ".config", "mbm");
+	path := filepath.Join(xdgDir, "mbm");
 
-	err = os.MkdirAll(path, 0755);
+	err := os.MkdirAll(path, 0755);
 	if err != nil {
 		return "", err;
 	}
