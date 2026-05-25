@@ -54,7 +54,7 @@ func parseFlags(argv []string) error {
 		case "-c", "--copy":
 			command = "copy";
             if len(argv) <= i+1 {
-                parsingError = fmt.Errorf("invalid operation: `--add` needs one argument, if option --file is not provided.");
+                parsingError = fmt.Errorf("invalid operation: `--copy` needs one argument, if option --file is not provided.");
                 break;
             }
 			arg = argv[i+1];
