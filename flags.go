@@ -45,13 +45,13 @@ func parseFlags(argv []string) error {
             if argv[i+1] != "--file" {
                 arg = argv[i+1];
             }
-        case "--help":
+        case "-h", "--help":
             command = "help";    
-        case "--edit":
+        case "-e", "--edit":
             command = "edit";
-		case "--import":
+		case "-i", "--import":
 			command = "import";
-		case "--copy":
+		case "-c", "--copy":
 			command = "copy";
             if len(argv) <= i+1 {
                 parsingError = fmt.Errorf("invalid operation: `--add` needs one argument, if option --file is not provided.");
