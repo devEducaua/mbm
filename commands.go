@@ -310,8 +310,17 @@ func copyFlag(name string, verbose bool, fp string) error {
 		return err;
 	}
 
-	cmd := exec.Command("xclip", "-selection", "clipboard", "-i");
-	cmd.Stdin = strings.NewReader(bk.Url);
+	var cmd *exec.Cmd;
+	sessionType := os.Getenv("XDG_SESSION_TYPE");
+	switch sessionType {
+	case "wayland":
+		cmd = exec.Command("wl-copy", bk.Url);
+	case "x11":
+		cmd = exec.Command("xclip", "-selection", "clipboard", "-i");
+		cmd.Stdin = strings.NewReader(bk.Url);
+	default:
+		return fmt.Errorf("invalid xdg_session_type: `%v`", sessionType);
+	}
 
 	if err := cmd.Run(); err != nil {
 		return err;
