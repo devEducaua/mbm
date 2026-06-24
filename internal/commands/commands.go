@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"mbm/internal/config"
+	"mbm/internal/types"
 )
 
 type TokKind int;
@@ -100,17 +102,17 @@ func applyQueryOnBk(tagBk map[string]bool, toks []Tok) bool {
 /* 
     supported flags: --list, --file, --tags, --verbose, --query
 */
-func listFlag(tags []string, verbose bool, query string, fp string) error {
+func ListFlag(tags []string, verbose bool, query string, fp string) error {
     if fp == "" {
         fp = "default"
     }
 
-    bks, err := parseFile(fp);    
+    bks, err := config.ParseFile(fp);    
     if err != nil {
         return fmt.Errorf("failed to parse the file: %v", err);
     }
 
-    var result []Bookmark;
+    var result []types.Bookmark;
 
     if query != "" {
         toks := tokenizeQuery(query);
@@ -165,21 +167,21 @@ func listFlag(tags []string, verbose bool, query string, fp string) error {
 /* 
     supported flags: --add, --file, --tags, --name
 */
-func addFlag(url string, name string, tags []string, fp string) error {
+func AddFlag(url string, name string, tags []string, fp string) error {
     if name == "" {
         name = url;
     }
 
-    bk := Bookmark{name, url, tags};
+	bk := types.Bookmark{Name: name, Url: url, Tags: tags};
 
 	if fp != "" {
-		err := saveBookmark(fp, bk);
+		err := config.SaveBookmark(fp, bk);
 		if err != nil {
 			return err;
 		}
 		return nil;
 	}
-	err := saveBookmark("default", bk);
+	err := config.SaveBookmark("default", bk);
 	if err != nil {
 		return err;
 	}
@@ -190,7 +192,7 @@ func addFlag(url string, name string, tags []string, fp string) error {
 /* 
     supported flags: --open, --file
 */
-func openFlag(name string, fp string) error {
+func OpenFlag(name string, fp string) error {
     bk, err := getBookmarkByName(name, fp);
     if err != nil {
         return err;
@@ -211,7 +213,7 @@ func openFlag(name string, fp string) error {
 /* 
     supported flags: --get, --verbose, --file
 */
-func getFlag(name string, verbose bool, fp string) error {
+func GetFlag(name string, verbose bool, fp string) error {
     bk, err := getBookmarkByName(name, fp);
     if err != nil {
         return err;
@@ -226,18 +228,18 @@ func getFlag(name string, verbose bool, fp string) error {
     return nil;
 }
 
-func getBookmarkByName(name string, fp string) (Bookmark, error) {
-    var bks []Bookmark;
+func getBookmarkByName(name string, fp string) (types.Bookmark, error) {
+    var bks []types.Bookmark;
     var err error;
 
     if fp != "" {
-        bks, err = parseFile(fp);
+        bks, err = config.ParseFile(fp);
     } else {
-        bks, err = parseFile("default");
+        bks, err = config.ParseFile("default");
     }
 
     if err != nil {
-        return Bookmark{}, fmt.Errorf("failed to parse the config: %v", err);
+        return types.Bookmark{}, fmt.Errorf("failed to parse the config: %v", err);
     }
     
     for _,bk := range bks {
@@ -245,7 +247,7 @@ func getBookmarkByName(name string, fp string) (Bookmark, error) {
             return bk, nil;
         }
     }
-    return Bookmark{}, nil;
+    return types.Bookmark{}, nil;
 }
 
 func externalCommand(cmds ...string) error {
@@ -260,7 +262,7 @@ func externalCommand(cmds ...string) error {
     return nil;
 }
 
-func helpFlag() error {
+func HelpFlag() error {
 	err := externalCommand("man", "mbm", "1");
 	if err != nil {
 		return err;
@@ -268,8 +270,8 @@ func helpFlag() error {
 	return nil;
 }
 
-func editFlag() error {
-	dir, err := getConfigDir();
+func EditFlag() error {
+	dir, err := config.GetConfigDir();
 	if err != nil {
 		return err;
 	}
@@ -285,16 +287,16 @@ func editFlag() error {
 /* 
     supported flags: --import, --file
 */
-func importFlag(fp string) error {
+func ImportFlag(fp string) error {
 	if fp == "" {
 		return fmt.Errorf("--import flag needs a file");
 	}
 
-	bks, err := parseFile(fp);
+	bks, err := config.ParseFile(fp);
 	if err != nil {
 		return err;
 	}
-	err = saveBookmark("default", bks...);
+	err = config.SaveBookmark("default", bks...);
 	if err != nil {
 		return err;
 	}
@@ -304,7 +306,7 @@ func importFlag(fp string) error {
 /* 
     supported flags: --copy, --verbose, --file
 */
-func copyFlag(name string, verbose bool, fp string) error {
+func CopyFlag(name string, verbose bool, fp string) error {
 	bk, err := getBookmarkByName(name, fp);
 	if err != nil {
 		return err;
