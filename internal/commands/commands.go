@@ -99,10 +99,12 @@ func applyQueryOnBk(tagBk map[string]bool, toks []Tok) bool {
     return stack[0];
 }
 
-/* 
-    supported flags: --list, --file, --tags, --verbose, --query
-*/
-func ListFlag(tags []string, verbose bool, query string, fp string) error {
+func ListFlag(tagsStr string, verbose bool, query string, fp string) error {
+	var tags []string;
+	if tagsStr != "" {
+		tags = strings.Split(tagsStr, ",");
+	}
+
     if fp == "" {
         fp = "default"
     }
@@ -160,14 +162,15 @@ func ListFlag(tags []string, verbose bool, query string, fp string) error {
             fmt.Println(bk.Name);
         }
     }
-
     return nil;
 }
 
-/* 
-    supported flags: --add, --file, --tags, --name
-*/
-func AddFlag(url string, name string, tags []string, fp string) error {
+func AddFlag(url string, name string, tagsStr string, fp string) error {
+	var tags []string;
+	if tagsStr != "" {
+		tags = strings.Split(tagsStr, ",");
+	}
+
     if name == "" {
         name = url;
     }
@@ -189,9 +192,6 @@ func AddFlag(url string, name string, tags []string, fp string) error {
     return nil;
 }
 
-/* 
-    supported flags: --open, --file
-*/
 func OpenFlag(name string, fp string) error {
     bk, err := getBookmarkByName(name, fp);
     if err != nil {
@@ -210,9 +210,6 @@ func OpenFlag(name string, fp string) error {
     return nil;
 }
 
-/* 
-    supported flags: --get, --verbose, --file
-*/
 func GetFlag(name string, verbose bool, fp string) error {
     bk, err := getBookmarkByName(name, fp);
     if err != nil {
@@ -284,9 +281,6 @@ func EditFlag() error {
 	return nil;
 }
 
-/* 
-    supported flags: --import, --file
-*/
 func ImportFlag(fp string) error {
 	if fp == "" {
 		return fmt.Errorf("--import flag needs a file");
@@ -303,9 +297,7 @@ func ImportFlag(fp string) error {
 
 	return nil;
 }
-/* 
-    supported flags: --copy, --verbose, --file
-*/
+
 func CopyFlag(name string, verbose bool, fp string) error {
 	bk, err := getBookmarkByName(name, fp);
 	if err != nil {
