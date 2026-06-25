@@ -20,15 +20,9 @@ mbm --help
 
 ## usage in scripts
 
-example usage of mbm with dmenu and fzf
+example usage of mbm with fzf:
 
-for dmenu:
 ```sh
-mbm --open $(mbm --list | dmenu)
-```
-
-for fzf:
-```sh
-mbm --open $(mbm --list | fzf)
+mbm open $(mbm list --verbose | fzf)
 ```
 
