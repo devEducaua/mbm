@@ -5,26 +5,70 @@ mbm \- manage bookmarks from the command line
 
 .SH SYNOPSIS
 .B mbm
-.RI [ MODE ] [ OPTIONS ]
+.RI [ COMMAND ] [ OPTIONS ]
 
 .SH DESCRIPTION
 mbm is a simple command-line bookmark manager.
 
-.SH MODES
+.SH COMMANDS
 
 .TP
-.B --list
-list all bookmarks.
+.B list
+list bookmarks.
 .br
-.B mbm --list [--tags TAGS] [--file PATH] [--query QUERY] [--verbose]
-.RS
+mbm list [--tags TAGS] [--file PATH] [--query QUERY] [--verbose]
+
+.TP
+.B get
+get bookmark url.
+.br
+mbm get NAME [--file PATH]
+
+.TP
+.B open
+open bookmark url in default application.
+.br
+mbm open NAME [--file PATH]
+
+.TP
+.B add
+add a new bookmark
+.br
+mbm add URL [--name NAME] [--tags TAGS] [--file PATH]
+
+.TP
+.B import
+import a list of bookmarks from file to config.
+.br
+mbm import --file PATH
+
+.TP
+.B copy
+copy bookmark url to clipboard.
+.br
+mbm copy NAME [--file PATH]
+
+.TP
+.B edit
+open bookmarks file in $EDITOR.
+.br
+mbm edit
+
+.TP
+.B help
+opens this manpage.
+.br
+mbm help
+
+.SH OPTIONS
+
 .TP
 .B --tags TAGS
 filter bookmarks by a comma-separated list of tags.
 
 .TP
 .B --file PATH
-use an alternate bookmark file.
+use an alternative bookmark file.
 
 .TP
 .B --query QUERY
@@ -33,118 +77,36 @@ a query structured in reverse polish notion, wiki keywords: "and", "or" and "not
 .TP
 .B --verbose
 enable verbose output.
-.RE
 
-.TP
-.B --add URL
-add a bookmark.
-.br
-.B mbm --add URL [--name NAME] [--tags TAGS] [--file PATH]
-.RS
 .TP
 .B --name NAME
 name of the bookmark.
 
-.TP
-.B --tags TAGS
-comma-separated list of tags to assign.
-
-.TP
-.B --file PATH
-add to an alternative bookmark file.
-.RE
-
-.TP
-.B --get NAME
-print the URL of a bookmark.
-.br
-.B mbm --get NAME [--file PATH] [--verbose]
-.RS
-.TP
-.B --file PATH
-use an alternative bookmark file.
-
-.TP
-.B --verbose
-enable verbose output.
-.RE
-
-.TP
-.B --open NAME
-open a bookmark using xdg-open.
-.br
-.B mbm --open NAME [--file PATH]
-.RS
-.TP
-.B --file PATH
-use an alternative bookmark file.
-.RE
-
-.TP
-.B --import
-import bookmarks from a file to default config file.
-.br
-.B mbm --import --file PATH
-.RS
-.TP
-.B --file PATH
-path to the bookmarks file.
-.RE
-
-.TP
-.B --copy NAME
-copy the bookmark url to the clipboard.
-.br
-.B mbm --copy NAME [--file PATH] [--verbose]
-.RS
-.TP
-.B --file PATH
-use an alternative bookmark file.
-.RE
-
-.RS
-.TP
-.B --verbose PATH
-enable verbose output.
-.RE
-
-.TP
-.B --edit
-opens config file in $EDITOR.
-
-.TP
-.B --help
-display this manual.
-
 .SH NOTES
-only one mode flag may be specified at a time.
-.br
-options are interpreted in the context of the selected mode.
-.br
-.B --copy
-flag only works on X11 and depends on xclip.
+.B copy
+command on wayland depends on wl-clipboard and on x11 depends on xclip.
 
 .SH EXAMPLES
 
 .TP
 list bookmarks with tags:
-.B mbm --list --tags personal,work
+.B mbm list --tags personal,work
 
 .TP
 list bookmarks that have the tag programming but not the tag blog.
-.B mbm --list --query "programming blog not and"
+.B mbm list --query "programming blog not and"
 
 .TP
 add a bookmark:
-.B mbm --add https://example.com --name example --tags personal
+.B mbm add https://example.com --name example --tags personal
 
 .TP
 get a bookmark:
-.B mbm --get example
+.B mbm get example
 
 .TP
 open a bookmark:
-.B mbm --open example
+.B mbm open example
 
 .SH EXIT STATUS
 0 on success, non-zero on error.
