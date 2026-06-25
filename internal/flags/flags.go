@@ -8,70 +8,82 @@ import (
 )
 
 type Flag struct {
+	Long string
+	Short string
 	Value any
-	Usage string
 }
 
-type Flags map[string]Flag;
+type Flags map[string]*Flag;
 
-func (flags Flags) Submit(long, short string, value any, usage string) {
-	f := &Flag{
-		Value: value, 
-		Usage: usage,
-	};
-	flags[long] = *f;
-	flags[short] = *f;
+func (flags Flags) Var(long, short string, variable any) {
+	flag := Flag{long, short, variable};
+	flags[long] = &flag;
+	flags[short] = &flag;
 }
 
 func (flags Flags) Parse(argv []string) error {
-	for i := range argv {
+	for i := 0; i < len(argv); i++ {
 		arg := argv[i];
 
-		var flag Flag;
-		ok := false;
+		var err error;
 
 		switch {
 		case strings.HasPrefix(arg, "--"):
-			flag, ok = flags[arg[2:]];
-			if !ok {
-				continue;
+			s := arg[2:];
+			flag := flags[s];
+			if flag == nil {
+				return fmt.Errorf("unknown flag: %v", arg);
 			}
-			if err := parseFlag(flag, i, argv); err != nil {
+
+			err = setFlag(flag, s, &i, argv);
+			if err != nil {
 				return err;
 			}
 		case strings.HasPrefix(arg, "-"):
-			withoutPrefix := arg[1:];
-			flag, ok = flags[withoutPrefix];
-			if !ok {
-				continue;
-			}
-			if err := parseFlag(flag, i, argv); err != nil {
-				return err;
+			shorts := arg[1:];
+			loop: for j := range shorts {
+				s := string(shorts[j]);
+				flag := flags[s];
+				if flag == nil {
+					return fmt.Errorf("unknown flag: %v", arg);
+				}
+
+				err = setFlag(flag, s, &i, argv);
+				if err != nil {
+					return err;
+				}
+				if _, ok := flag.Value.(*bool); !ok {
+					break loop;
+				}
 			}
 		}
+
 	}
+
 	return nil;
 }
 
-func parseFlag(flag Flag, i int, argv []string) error {
-	arg := argv[i];
+func setFlag(flag *Flag, s string, i* int, argv []string) error {
 	switch v := flag.Value.(type) {
+	case *string:
+		if *i+1 >= len(argv) {
+			return fmt.Errorf("flag %v needs an argument", s);
+		}
+
+		*i++
+		*v = argv[*i];
+	case *int:
+		if *i+1 >= len(argv) {
+			return fmt.Errorf("flag %v needs an argument", s);
+		}
+		*i++
+		conv, err := strconv.Atoi(argv[*i]);
+		if err != nil {
+			return fmt.Errorf("argument for %v flag needs to be an integer", s);
+		}
+		*v = conv;
 	case *bool:
 		*v = true;
-	case *string:
-		if len(argv) <= i+1 {
-			return fmt.Errorf("%v flag need an argument", arg);
-		}
-		*v = argv[i+1];
-	case *int:
-		if len(argv) <= i+1 {
-			return fmt.Errorf("%v flag need an argument", arg);
-		}
-		value, err := strconv.Atoi(argv[i+1]);
-		if err != nil {
-			return fmt.Errorf("%v needs to be an integer", arg);
-		}
-		*v = value;
 	}
 	return nil;
 }
